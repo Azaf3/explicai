@@ -1,11 +1,12 @@
-import { DEFAULT_MODEL, MODELS, type ModelId, type Review } from './ai/review'
+import { DEFAULT_PROVIDER, PROVIDERS, getProvider, type ProviderId, type Review } from './ai/review'
 
 /**
- * Tudo fica no localStorage deste navegador: chave, modelo e tentativas.
- * Não existe servidor do Explicaí, então nada disso sai daqui, a não ser a chamada para a Anthropic.
+ * Tudo fica no localStorage deste navegador: chaves, modelo e tentativas.
+ * Não existe servidor do Explicaí, então nada disso sai daqui, a não ser a chamada para o provedor de IA.
  */
-const KEY_API = 'explicai:api-key'
-const KEY_MODEL = 'explicai:model'
+const KEY_PROVIDER = 'explicai:provider'
+const keyFor = (provider: ProviderId) => `explicai:api-key:${provider}`
+const modelFor = (provider: ProviderId) => `explicai:model:${provider}`
 const KEY_ATTEMPTS = 'explicai:attempts'
 
 export interface Attempt {
@@ -15,7 +16,7 @@ export interface Attempt {
   explanation: string
   review: Review
   /** Modelo usado, ou 'demo' quando veio dos exemplos prontos. */
-  source: ModelId | 'demo'
+  source: string
 }
 
 function read(key: string): string | null {
@@ -36,13 +37,19 @@ function write(key: string, value: string | null) {
 }
 
 export const settings = {
-  getApiKey: () => read(KEY_API) ?? '',
-  setApiKey: (key: string) => write(KEY_API, key.trim() || null),
-  getModel: (): ModelId => {
-    const saved = read(KEY_MODEL)
-    return MODELS.some((m) => m.id === saved) ? (saved as ModelId) : DEFAULT_MODEL
+  getProvider: (): ProviderId => {
+    const saved = read(KEY_PROVIDER)
+    return PROVIDERS.some((p) => p.id === saved) ? (saved as ProviderId) : DEFAULT_PROVIDER
   },
-  setModel: (model: ModelId) => write(KEY_MODEL, model),
+  setProvider: (provider: ProviderId) => write(KEY_PROVIDER, provider),
+  getApiKey: (provider: ProviderId) => read(keyFor(provider)) ?? '',
+  setApiKey: (provider: ProviderId, key: string) => write(keyFor(provider), key.trim() || null),
+  getModel: (provider: ProviderId): string => {
+    const models = getProvider(provider).models
+    const saved = read(modelFor(provider))
+    return models.some((m) => m.id === saved) ? saved! : models[0].id
+  },
+  setModel: (provider: ProviderId, model: string) => write(modelFor(provider), model),
 }
 
 /** Só pra mostrar na tela sem expor a chave inteira. */

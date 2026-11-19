@@ -6,7 +6,7 @@ Como o Explicaí foi construído junto com o Claude (Anthropic). A ideia é deix
 
 **Eu (Azaf3)**
 - Ideia do produto: estudar explicando, com a IA corrigindo a partir do meu texto, sem substituir.
-- Decisões: cada pessoa usa a própria chave de API; modo de demonstração para quem não tem chave; nome e slogan.
+- Decisões: cada pessoa usa a própria chave de API; uma opção gratuita; modo de demonstração para quem não tem chave; nome e slogan.
 - Revisão do conteúdo dos conceitos e do código.
 
 **Claude**
@@ -22,8 +22,10 @@ Como o Explicaí foi construído junto com o Claude (Anthropic). A ideia é deix
    - CORS: a API aceita chamadas do navegador com o cabeçalho `anthropic-dangerous-direct-browser-access: true`.
    - Formato da resposta: structured outputs com `output_config.format` e JSON Schema (`additionalProperties: false` obrigatório; `minLength`, `minimum` e afins não são suportados).
    - Versão: `anthropic-version: 2026-10-21`.
+   - Gemini: chave no cabeçalho `x-goog-api-key`, JSON Schema em `generationConfig.responseFormat`.
 4. **Implementação** do cliente com tratamento de recusa, resposta cortada, JSON inválido e erros HTTP.
 5. **Telas, testes, README e deploy.**
+6. **Opção gratuita.** Ao testar, percebi que a API da Anthropic exige crédito pré-pago, e eu queria que qualquer pessoa pudesse usar de graça. Adicionamos o Gemini, que tem nível gratuito, como padrão. A lógica comum (prompt, schema, leitura do JSON) foi separada do código de cada provedor.
 
 ## Onde a IA errou ou estava desatualizada
 
@@ -44,6 +46,6 @@ Como o Explicaí foi construído junto com o Claude (Anthropic). A ideia é deix
 
 ## Limitações conhecidas
 
-- A correção real ainda depende de quem usa ter uma chave da Anthropic.
+- A correção real depende de quem usa ter uma chave (a do Gemini é grátis, mas tem limite de uso e, no nível gratuito, o Google pode usar o conteúdo enviado).
 - A chave fica no `localStorage`; qualquer pessoa com acesso ao navegador consegue vê-la.
 - A IA pode errar. A referência de cada conceito fica disponível para conferir.

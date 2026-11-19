@@ -3,7 +3,7 @@ const roles = [
     who: 'Eu (Azaf3)',
     items: [
       'A ideia: um lugar pra estudar explicando, onde a IA corrige em cima do que eu escrevi.',
-      'As decisões de produto: cada pessoa usa a própria chave, modo de demonstração pra quem não tem chave, o nome.',
+      'As decisões de produto: cada pessoa usa a própria chave, uma opção de IA gratuita, modo de demonstração pra quem não tem chave, o nome.',
       'A revisão do conteúdo dos conceitos e do código antes de subir.',
     ],
   },
@@ -11,7 +11,7 @@ const roles = [
     who: 'Claude (IA)',
     items: [
       'Escreveu a maior parte do código, dos testes e o primeiro rascunho dos conceitos.',
-      'Pesquisou na documentação oficial da Anthropic como chamar a API direto do navegador.',
+      'Pesquisou nas documentações oficiais da Anthropic e do Google como chamar cada API direto do navegador.',
       'Propôs a estrutura das telas e o formato da correção.',
     ],
   },
@@ -31,8 +31,8 @@ const decisions = [
     body: 'O prompt manda partir das palavras e analogias de quem escreveu, mexer o mínimo no texto e fazer perguntas em vez de entregar o que faltou. A referência do conceito fica escondida até você abrir, pra não virar cola.',
   },
   {
-    title: 'Modelo mais barato como padrão',
-    body: 'Corrigir um parágrafo não precisa do modelo mais caro. O padrão é o Haiku 5.5, e dá pra trocar em Configurações.',
+    title: 'Grátis por padrão, sem prender a um provedor',
+    body: 'A primeira versão só tinha o Claude, que é pago. Pra qualquer pessoa conseguir testar, o padrão virou o Gemini, que tem nível gratuito. O prompt, o formato da correção e a leitura do JSON são os mesmos; cada provedor só tem o próprio jeito de montar a requisição e ler a resposta. Adicionar outro é escrever um arquivo novo.',
   },
 ]
 

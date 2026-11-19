@@ -20,26 +20,79 @@ export interface Review {
   revised: string
 }
 
-export const MODELS = [
-  { id: 'claude-haiku-5-5', label: 'Claude Haiku 5.5', note: 'Mais rápido e barato. Bom para o dia a dia.' },
-  {
-    id: 'claude-sonnet-5-5',
-    label: 'Claude Sonnet 5.5',
-    note: 'Equilíbrio entre velocidade e profundidade.',
-  },
-  { id: 'claude-opus-5-5', label: 'Claude Opus 5.5', note: 'Mais cuidadoso, mais caro.' },
-] as const
+export type ProviderId = 'gemini' | 'anthropic'
 
-export type ModelId = (typeof MODELS)[number]['id']
-export const DEFAULT_MODEL: ModelId = 'claude-haiku-5-5'
+export interface ModelOption {
+  id: string
+  label: string
+  note: string
+}
 
-export const API_URL = 'https://api.anthropic.com/v1/messages'
-export const API_VERSION = '2026-10-21'
-export const MAX_TOKENS = 4000
-export const MIN_EXPLANATION_LENGTH = 40
+export interface ProviderInfo {
+  id: ProviderId
+  label: string
+  price: string
+  keyUrl: string
+  keyHint: string
+  keyPlaceholder: string
+  notes: string[]
+  models: ModelOption[]
+}
 
 /**
- * Formato que a resposta da IA é obrigada a seguir (structured outputs).
+ * O app não depende de um provedor só: o prompt e o formato da correção são os mesmos,
+ * e cada provedor tem só a sua forma de montar a requisição e ler a resposta.
+ */
+export const PROVIDERS: ProviderInfo[] = [
+  {
+    id: 'gemini',
+    label: 'Gemini (Google)',
+    price: 'Grátis',
+    keyUrl: 'https://aistudio.google.com/apikey',
+    keyHint: 'Crie uma chave grátis no Google AI Studio, sem cartão.',
+    keyPlaceholder: 'AIza...',
+    notes: [
+      'O nível gratuito tem limite de uso por minuto e por dia.',
+      'No nível gratuito, o Google pode usar o que você envia para melhorar os produtos dele.',
+    ],
+    models: [
+      { id: 'gemini-flash-latest', label: 'Gemini Flash', note: 'O Flash mais recente. Boa qualidade.' },
+      { id: 'gemini-flash-lite-latest', label: 'Gemini Flash-Lite', note: 'Mais rápido, limite maior.' },
+    ],
+  },
+  {
+    id: 'anthropic',
+    label: 'Claude (Anthropic)',
+    price: 'Pago',
+    keyUrl: 'https://platform.claude.com/',
+    keyHint: 'Crie uma chave no Claude Platform. Precisa de crédito pré-pago.',
+    keyPlaceholder: 'sk-ant-...',
+    notes: ['Cada correção com o Haiku custa uma fração de centavo de dólar.'],
+    models: [
+      { id: 'claude-haiku-5-5', label: 'Claude Haiku 5.5', note: 'Mais rápido e barato.' },
+      {
+        id: 'claude-sonnet-5-5',
+        label: 'Claude Sonnet 5.5',
+        note: 'Equilíbrio entre velocidade e profundidade.',
+      },
+      { id: 'claude-opus-5-5', label: 'Claude Opus 5.5', note: 'Mais cuidadoso, mais caro.' },
+    ],
+  },
+]
+
+export const DEFAULT_PROVIDER: ProviderId = 'gemini'
+export const MIN_EXPLANATION_LENGTH = 40
+
+export function getProvider(id: ProviderId): ProviderInfo {
+  return PROVIDERS.find((p) => p.id === id) ?? PROVIDERS[0]
+}
+
+export function getModelLabel(provider: ProviderId, model: string): string {
+  return getProvider(provider).models.find((m) => m.id === model)?.label ?? model
+}
+
+/**
+ * Formato que a resposta da IA é obrigada a seguir (structured outputs nos dois provedores).
  * Os nomes ficam em português porque aparecem para o modelo e ajudam a manter a resposta no idioma.
  */
 export const reviewSchema = {
@@ -112,19 +165,8 @@ export function buildSystemPrompt(concept: Concept): string {
   ].join('\n')
 }
 
-export function buildRequestBody(concept: Concept, explanation: string, model: ModelId) {
-  return {
-    model,
-    max_tokens: MAX_TOKENS,
-    system: buildSystemPrompt(concept),
-    messages: [
-      {
-        role: 'user',
-        content: `Minha explicação sobre "${concept.title}":\n\n<explicacao>\n${explanation.trim()}\n</explicacao>`,
-      },
-    ],
-    output_config: { format: { type: 'json_schema', schema: reviewSchema } },
-  }
+export function buildUserMessage(concept: Concept, explanation: string): string {
+  return `Minha explicação sobre "${concept.title}":\n\n<explicacao>\n${explanation.trim()}\n</explicacao>`
 }
 
 export class ReviewError extends Error {
@@ -138,17 +180,6 @@ export class ReviewError extends Error {
   }
 }
 
-interface ApiTextBlock {
-  type: string
-  text?: string
-}
-
-interface ApiResponse {
-  stop_reason?: string
-  content?: ApiTextBlock[]
-  error?: { message?: string }
-}
-
 interface RawReview {
   veredito: string
   resumo: string
@@ -160,16 +191,8 @@ interface RawReview {
 
 const VERDICTS: Verdict[] = ['firme', 'quase', 'revisar']
 
-/** Lê a resposta da API e converte para o formato do app. Lança ReviewError quando não dá. */
-export function parseReview(data: ApiResponse): Review {
-  if (data.stop_reason === 'refusal') {
-    throw new ReviewError('refusal', 'A IA não quis avaliar esse texto. Tente reescrever a explicação.')
-  }
-  if (data.stop_reason === 'max_tokens') {
-    throw new ReviewError('truncated', 'A resposta foi cortada no meio. Tente uma explicação mais curta.')
-  }
-
-  const text = data.content?.find((block) => block.type === 'text')?.text
+/** Converte o JSON que a IA devolveu para o formato do app. Igual para todos os provedores. */
+export function parseReviewJson(text: string | undefined): Review {
   if (!text) throw new ReviewError('invalid', 'A resposta da IA veio vazia.')
 
   let raw: RawReview
@@ -179,13 +202,13 @@ export function parseReview(data: ApiResponse): Review {
     throw new ReviewError('invalid', 'A resposta da IA não veio no formato esperado.')
   }
 
-  // A doc avisa que enums podem vir com maiúscula diferente; comparo sem diferenciar.
+  // Enums podem vir com maiúscula diferente; comparo sem diferenciar.
   const verdict = VERDICTS.find((v) => v === String(raw.veredito).toLowerCase())
   if (!verdict) throw new ReviewError('invalid', 'A resposta da IA trouxe um veredito desconhecido.')
 
   return {
     verdict,
-    summary: raw.resumo,
+    summary: raw.resumo ?? '',
     correct: raw.acertos ?? [],
     adjustments: (raw.ajustes ?? []).map((a) => ({
       excerpt: a.trecho,
@@ -193,67 +216,32 @@ export function parseReview(data: ApiResponse): Review {
       suggestion: a.sugestao,
     })),
     questions: raw.perguntas ?? [],
-    revised: raw.versao_ajustada,
+    revised: raw.versao_ajustada ?? '',
   }
 }
 
-function errorFromStatus(status: number, message?: string): ReviewError {
-  if (status === 401 || status === 403) {
-    return new ReviewError('auth', 'A chave de API foi recusada. Confira em Configurações.')
-  }
-  if (status === 429) {
-    return new ReviewError(
-      'rate_limit',
-      'Limite de uso da sua chave atingido. Espere um pouco e tente de novo.',
-    )
-  }
-  if (status === 529) {
-    return new ReviewError('overloaded', 'A API está sobrecarregada agora. Tente de novo em alguns segundos.')
-  }
-  return new ReviewError('api', message ? `Erro da API: ${message}` : `Erro da API (status ${status}).`)
-}
-
-export interface ReviewRequest {
+export interface ProviderRequest {
   apiKey: string
-  model: ModelId
+  model: string
   concept: Concept
   explanation: string
   fetchFn?: typeof fetch
   signal?: AbortSignal
 }
 
-/**
- * Chama a API da Anthropic direto do navegador, com a chave do próprio usuário.
- * O cabeçalho anthropic-dangerous-direct-browser-access libera o CORS: o nome é um aviso
- * de que a chave fica visível no navegador. Aqui isso é aceitável porque a chave é de quem está usando.
- */
-export async function requestReview({
-  apiKey,
-  model,
-  concept,
-  explanation,
-  fetchFn = globalThis.fetch,
-  signal,
-}: ReviewRequest): Promise<Review> {
+/** Faz a chamada de rede e transforma falha de conexão em um erro legível. */
+export async function sendRequest(
+  fetchFn: typeof fetch,
+  url: string,
+  init: RequestInit,
+): Promise<{ response: Response; data: unknown }> {
   let response: Response
   try {
-    response = await fetchFn(API_URL, {
-      method: 'POST',
-      signal,
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': API_VERSION,
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify(buildRequestBody(concept, explanation, model)),
-    })
+    response = await fetchFn(url, init)
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') throw error
     throw new ReviewError('network', 'Não foi possível falar com a API. Confira sua conexão.')
   }
-
-  const data = (await response.json().catch(() => ({}))) as ApiResponse
-  if (!response.ok) throw errorFromStatus(response.status, data.error?.message)
-  return parseReview(data)
+  const data: unknown = await response.json().catch(() => ({}))
+  return { response, data }
 }

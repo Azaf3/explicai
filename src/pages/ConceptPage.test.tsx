@@ -49,11 +49,13 @@ describe('ConceptPage', () => {
     expect(attempts.all()).toHaveLength(0)
   })
 
-  it('com chave, envia a explicação, mostra a correção e salva no histórico', async () => {
-    settings.setApiKey('sk-ant-teste-1234567890')
+  it('com chave do Gemini (padrão), envia a explicação, mostra a correção e salva no histórico', async () => {
+    settings.setApiKey('gemini', 'AIza-teste-1234567890')
     const spy = vi
       .fn()
-      .mockResolvedValue(apiReply({ content: [{ type: 'text', text: JSON.stringify(rawDemo) }] }))
+      .mockResolvedValue(
+        apiReply({ candidates: [{ content: { parts: [{ text: JSON.stringify(rawDemo) }] } }] }),
+      )
     vi.stubGlobal('fetch', spy)
     renderAt('/conceito/react')
 
@@ -67,12 +69,14 @@ describe('ConceptPage', () => {
     await userEvent.click(button)
 
     expect(await screen.findAllByRole('region', { name: 'Correção' })).not.toHaveLength(0)
-    expect(spy.mock.calls[0][1].headers['x-api-key']).toBe('sk-ant-teste-1234567890')
+    expect(spy.mock.calls[0][0]).toContain('generativelanguage.googleapis.com')
+    expect(spy.mock.calls[0][1].headers['x-goog-api-key']).toBe('AIza-teste-1234567890')
     expect(screen.getByText('Suas tentativas (1)')).toBeInTheDocument()
   })
 
-  it('mostra a mensagem de erro da API', async () => {
-    settings.setApiKey('sk-ant-teste-1234567890')
+  it('com o Claude escolhido, mostra a mensagem de erro da API', async () => {
+    settings.setProvider('anthropic')
+    settings.setApiKey('anthropic', 'sk-ant-teste-1234567890')
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(apiReply({ error: { message: 'invalid x-api-key' } }, 401)),
@@ -85,7 +89,7 @@ describe('ConceptPage', () => {
     )
     await userEvent.click(screen.getByRole('button', { name: 'Pedir correção' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('A chave de API foi recusada')
+    expect(await screen.findByRole('alert')).toHaveTextContent('A chave da Anthropic foi recusada')
   })
 
   it('avisa quando o conceito não existe', () => {

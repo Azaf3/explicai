@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { MIN_EXPLANATION_LENGTH, MODELS, ReviewError, requestReview, type Review } from '../ai/review'
+import { requestReview } from '../ai/requestReview'
+import { MIN_EXPLANATION_LENGTH, ReviewError, getModelLabel, type Review } from '../ai/review'
 import ReviewView, { VerdictBadge } from '../components/ReviewView'
 import { findConcept } from '../data/concepts'
 import { findDemo } from '../data/demo'
@@ -38,8 +39,9 @@ function ConceptView({ id }: { id: string | undefined }) {
     )
   }
 
-  const apiKey = settings.getApiKey()
-  const model = settings.getModel()
+  const provider = settings.getProvider()
+  const apiKey = settings.getApiKey(provider)
+  const model = settings.getModel(provider)
   const demo = findDemo(concept.id)
   const tooShort = text.trim().length < MIN_EXPLANATION_LENGTH
   const loading = status.kind === 'loading'
@@ -55,6 +57,7 @@ function ConceptView({ id }: { id: string | undefined }) {
 
     try {
       const review = await requestReview({
+        provider,
         apiKey,
         model,
         concept,
@@ -77,7 +80,7 @@ function ConceptView({ id }: { id: string | undefined }) {
     setStatus({ kind: 'done', review: demo.review, isDemo: true })
   }
 
-  const modelLabel = MODELS.find((m) => m.id === model)?.label
+  const modelLabel = getModelLabel(provider, model)
 
   return (
     <article className="concept">
@@ -116,8 +119,9 @@ function ConceptView({ id }: { id: string | undefined }) {
         ) : (
           <div className="notice" role="note">
             <p>
-              Para a IA corrigir o seu texto, cadastre sua chave da API da Anthropic em{' '}
-              <Link to="/configuracoes">Configurações</Link>. Ela fica só neste navegador.
+              Para a IA corrigir o seu texto, cadastre uma chave em{' '}
+              <Link to="/configuracoes">Configurações</Link>. Dá pra usar o Gemini, que é grátis e não pede
+              cartão. A chave fica só neste navegador.
             </p>
             {demo ? (
               <button type="button" className="button button-ghost" onClick={showDemo}>

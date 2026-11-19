@@ -5,19 +5,28 @@ import { attempts, maskKey, settings } from './storage'
 beforeEach(() => localStorage.clear())
 
 describe('settings', () => {
-  it('guarda a chave sem espaços e remove quando vazia', () => {
-    settings.setApiKey('  sk-ant-abc  ')
-    expect(settings.getApiKey()).toBe('sk-ant-abc')
-    settings.setApiKey('')
-    expect(settings.getApiKey()).toBe('')
-    expect(localStorage.getItem('explicai:api-key')).toBeNull()
+  it('usa o Gemini (grátis) como provedor padrão', () => {
+    expect(settings.getProvider()).toBe('gemini')
+    settings.setProvider('anthropic')
+    expect(settings.getProvider()).toBe('anthropic')
   })
 
-  it('volta para o modelo padrão se o salvo não existir mais', () => {
-    localStorage.setItem('explicai:model', 'modelo-antigo')
-    expect(settings.getModel()).toBe('claude-haiku-5-5')
-    settings.setModel('claude-opus-5-5')
-    expect(settings.getModel()).toBe('claude-opus-5-5')
+  it('guarda uma chave por provedor, sem espaços, e remove quando vazia', () => {
+    settings.setApiKey('gemini', '  AIza-abc  ')
+    settings.setApiKey('anthropic', 'sk-ant-abc')
+    expect(settings.getApiKey('gemini')).toBe('AIza-abc')
+    expect(settings.getApiKey('anthropic')).toBe('sk-ant-abc')
+    settings.setApiKey('gemini', '')
+    expect(settings.getApiKey('gemini')).toBe('')
+    expect(localStorage.getItem('explicai:api-key:gemini')).toBeNull()
+  })
+
+  it('volta para o primeiro modelo do provedor se o salvo não existir mais', () => {
+    localStorage.setItem('explicai:model:anthropic', 'modelo-antigo')
+    expect(settings.getModel('anthropic')).toBe('claude-haiku-5-5')
+    settings.setModel('anthropic', 'claude-opus-5-5')
+    expect(settings.getModel('anthropic')).toBe('claude-opus-5-5')
+    expect(settings.getModel('gemini')).toBe('gemini-flash-latest')
   })
 })
 
