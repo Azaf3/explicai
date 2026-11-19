@@ -12,6 +12,12 @@ describe('buildSystemPrompt', () => {
     for (const point of concept.keyPoints) expect(prompt).toContain(point)
     for (const mistake of concept.commonMistakes) expect(prompt).toContain(mistake)
   })
+
+  it('pede uma correção curta, com limite de itens', () => {
+    const prompt = buildSystemPrompt(concept)
+    expect(prompt).toContain('Seja breve')
+    expect(prompt).toContain('"perguntas": no máximo 2')
+  })
 })
 
 describe('parseReviewJson', () => {

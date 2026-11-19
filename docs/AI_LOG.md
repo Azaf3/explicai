@@ -27,6 +27,7 @@ Como o Explicaí foi construído junto com o Claude (Anthropic). A ideia é deix
 5. **Telas, testes, README e deploy.**
 6. **Opção gratuita.** Ao testar, percebi que a API da Anthropic exige crédito pré-pago, e eu queria que qualquer pessoa pudesse usar de graça. Adicionamos o Gemini, que tem nível gratuito, como padrão. A lógica comum (prompt, schema, leitura do JSON) foi separada do código de cada provedor.
 7. **Demora na correção.** No primeiro teste real, a resposta do Gemini demorou muito. Causa: os Flash atuais raciocinam antes de responder, e isso vem ligado por padrão. Passamos `thinkingLevel: "low"` (com nova tentativa sem ele, se algum modelo recusar) e a tela agora mostra o tempo passando e um botão de cancelar.
+8. **Correção mais curta.** Pedi respostas resumidas: resposta grande demora mais. O prompt e o schema agora limitam a 1 frase de resumo, até 3 acertos, até 3 ajustes e até 2 perguntas.
 
 ## Onde a IA errou ou estava desatualizada
 
