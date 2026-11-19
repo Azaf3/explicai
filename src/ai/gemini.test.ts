@@ -16,11 +16,12 @@ describe('buildGeminiBody', () => {
     expect(body.generationConfig).toMatchObject({
       responseFormat: { text: { mimeType: 'APPLICATION_JSON' } },
     })
+    expect(body.generationConfig).toMatchObject({ thinkingConfig: { thinkingLevel: 'low' } })
     expect(body.generationConfig).not.toHaveProperty('temperature')
   })
 
   it('tem um formato alternativo com responseMimeType e responseJsonSchema', () => {
-    const body = buildGeminiBody(concept, 'texto', 'legacy')
+    const body = buildGeminiBody(concept, 'texto', { style: 'legacy' })
     expect(body.generationConfig).toMatchObject({ responseMimeType: 'application/json' })
     expect(body.generationConfig).toHaveProperty('responseJsonSchema')
   })
@@ -86,6 +87,41 @@ describe('requestGeminiReview', () => {
 
     expect(fetchFn).toHaveBeenCalledTimes(2)
     expect(JSON.parse(fetchFn.mock.calls[1][1].body).generationConfig).toHaveProperty('responseJsonSchema')
+  })
+
+  it('tenta sem o raciocínio baixo se o modelo não aceitar thinkingLevel', async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({ error: { message: 'thinking_level is not supported by this model' } }, 400),
+      )
+      .mockResolvedValueOnce(jsonResponse(okBody))
+
+    await requestGeminiReview({
+      apiKey: 'k',
+      model: 'gemini-flash-latest',
+      concept,
+      explanation: 'texto',
+      fetchFn,
+    })
+
+    const retried = JSON.parse(fetchFn.mock.calls[1][1].body).generationConfig
+    expect(retried).not.toHaveProperty('thinkingConfig')
+    expect(retried).toHaveProperty('responseFormat')
+  })
+
+  it('não fica tentando de novo quando o erro é outro', async () => {
+    const fetchFn = vi.fn().mockResolvedValue(jsonResponse({ error: { message: 'API key not valid.' } }, 400))
+    await expect(
+      requestGeminiReview({
+        apiKey: 'k',
+        model: 'gemini-flash-latest',
+        concept,
+        explanation: 'texto',
+        fetchFn,
+      }),
+    ).rejects.toMatchObject({ kind: 'auth' })
+    expect(fetchFn).toHaveBeenCalledTimes(1)
   })
 
   it.each([

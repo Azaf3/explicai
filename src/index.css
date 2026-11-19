@@ -464,6 +464,55 @@ textarea:focus {
   margin: 0;
 }
 
+.waiting {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1.25rem;
+  background: var(--card);
+  border: 1.5px dashed var(--ink);
+  border-radius: var(--radius);
+}
+
+.waiting .link-button {
+  margin-left: auto;
+  color: var(--ink-2);
+}
+
+.dots {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink);
+  animation: pulse 1s infinite ease-in-out;
+}
+
+.dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
 .error {
   background: var(--red-bg);
   color: var(--red);
@@ -784,5 +833,10 @@ blockquote {
 @media (prefers-reduced-motion: reduce) {
   .card {
     transition: none;
+  }
+
+  .dots span {
+    animation: none;
+    opacity: 0.6;
   }
 }

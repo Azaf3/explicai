@@ -24,10 +24,20 @@ export function geminiUrl(model: string): string {
  */
 export type GeminiFormatStyle = 'responseFormat' | 'legacy'
 
+export interface GeminiBodyOptions {
+  style?: GeminiFormatStyle
+  /**
+   * Os Flash atuais raciocinam antes de responder, e isso vem ligado por padrão.
+   * Corrigir um parágrafo não precisa de raciocínio profundo: 'low' deixa a resposta bem mais rápida.
+   * Se algum modelo recusar o parâmetro, a chamada é refeita sem ele.
+   */
+  lowThinking?: boolean
+}
+
 export function buildGeminiBody(
   concept: Concept,
   explanation: string,
-  style: GeminiFormatStyle = 'responseFormat',
+  { style = 'responseFormat', lowThinking = true }: GeminiBodyOptions = {},
 ) {
   const format =
     style === 'responseFormat'
@@ -37,7 +47,11 @@ export function buildGeminiBody(
   return {
     systemInstruction: { parts: [{ text: buildSystemPrompt(concept) }] },
     contents: [{ role: 'user', parts: [{ text: buildUserMessage(concept, explanation) }] }],
-    generationConfig: { maxOutputTokens: GEMINI_MAX_TOKENS, ...format },
+    generationConfig: {
+      maxOutputTokens: GEMINI_MAX_TOKENS,
+      ...format,
+      ...(lowThinking ? { thinkingConfig: { thinkingLevel: 'low' } } : {}),
+    },
   }
 }
 
@@ -71,8 +85,12 @@ export function parseGeminiResponse(data: GeminiResponse): Review {
   return parseReviewJson(text)
 }
 
+function isThinkingError(data: GeminiResponse): boolean {
+  return /thinking/i.test(data.error?.message ?? '')
+}
+
 function isFormatFieldError(data: GeminiResponse): boolean {
-  return /responseFormat|Unknown name/i.test(data.error?.message ?? '')
+  return !isThinkingError(data) && /responseFormat|Unknown name/i.test(data.error?.message ?? '')
 }
 
 function errorFromResponse(status: number, data: GeminiResponse): ReviewError {
@@ -110,17 +128,24 @@ export async function requestGeminiReview({
   fetchFn = globalThis.fetch,
   signal,
 }: ProviderRequest): Promise<Review> {
-  const call = (style: GeminiFormatStyle) =>
+  const call = (options: GeminiBodyOptions) =>
     sendRequest(fetchFn, geminiUrl(model), {
       method: 'POST',
       signal,
       headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
-      body: JSON.stringify(buildGeminiBody(concept, explanation, style)),
+      body: JSON.stringify(buildGeminiBody(concept, explanation, options)),
     })
 
-  let { response, data } = await call('responseFormat')
-  if (response.status === 400 && isFormatFieldError(data as GeminiResponse)) {
-    ;({ response, data } = await call('legacy'))
+  // Começa com o formato atual da doc e raciocínio baixo. Se a API recusar um dos dois,
+  // tenta de novo sem o que foi recusado (no máximo duas novas tentativas).
+  const options: Required<GeminiBodyOptions> = { style: 'responseFormat', lowThinking: true }
+  let { response, data } = await call(options)
+  for (let retry = 0; retry < 2 && response.status === 400; retry++) {
+    const error = data as GeminiResponse
+    if (options.lowThinking && isThinkingError(error)) options.lowThinking = false
+    else if (options.style === 'responseFormat' && isFormatFieldError(error)) options.style = 'legacy'
+    else break
+    ;({ response, data } = await call(options))
   }
 
   const body = data as GeminiResponse

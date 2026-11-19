@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { requestReview } from '../ai/requestReview'
 import { MIN_EXPLANATION_LENGTH, ReviewError, getModelLabel, type Review } from '../ai/review'
 import ReviewView, { VerdictBadge } from '../components/ReviewView'
+import Waiting from '../components/Waiting'
 import { findConcept } from '../data/concepts'
 import { findDemo } from '../data/demo'
 import { attempts, settings, type Attempt } from '../storage'
@@ -137,6 +138,15 @@ function ConceptView({ id }: { id: string | undefined }) {
           </div>
         )}
       </form>
+
+      {loading && (
+        <Waiting
+          onCancel={() => {
+            abortRef.current?.abort()
+            setStatus({ kind: 'idle' })
+          }}
+        />
+      )}
 
       {status.kind === 'error' && (
         <p className="error" role="alert">
