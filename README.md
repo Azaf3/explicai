@@ -12,7 +12,12 @@ A ideia é usar IA pra aprender, não pra terceirizar o entendimento.
 
 ## Feito com IA, de propósito
 
-Este projeto foi feito em dupla com o Claude (Anthropic), e **os commits mostram isso** com a linha `Co-Authored-By`. A página [Como foi feito com IA](https://azaf3.github.io/explicai/como-foi-feito) e o arquivo [docs/AI_LOG.md](docs/AI_LOG.md) contam quem decidiu o quê, onde a IA errou ou estava desatualizada e como foi pego.
+O projeto foi feito em dupla com o Claude (Anthropic), e **os commits mostram isso** com a linha `Co-Authored-By`.
+
+- **Eu (Azaf3):** ideia, objetivo, decisões de produto (chave de cada pessoa, modo demo, opção gratuita) e testes de uso real, que viraram ajustes de custo, velocidade e tamanho da resposta.
+- **Claude:** implementação, testes automatizados e pesquisa na documentação oficial das APIs.
+
+A página [Como foi feito com IA](https://azaf3.github.io/explicai/como-foi-feito) e o arquivo [docs/AI_LOG.md](docs/AI_LOG.md) detalham cada decisão, o que eu peguei testando e o que a IA pegou conferindo a documentação.
 
 ## Como funciona
 
@@ -38,7 +43,7 @@ Este projeto foi feito em dupla com o Claude (Anthropic), e **os commits mostram
 
 - React 19 + TypeScript + Vite
 - React Router (busca e filtro na URL)
-- Vitest + Testing Library (41 testes: os dois provedores, armazenamento e fluxo da tela)
+- Vitest + Testing Library (44 testes: os dois provedores, armazenamento e fluxo da tela)
 - oxlint + Prettier
 - Deploy estático no GitHub Pages
 
