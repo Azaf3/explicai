@@ -30,6 +30,7 @@ Como o Explicaí foi construído junto com o Claude (Anthropic): quem decidiu o 
 6. **Gemini como padrão** (decisão minha, implementação da IA). Lógica comum (prompt, schema, leitura do JSON) separada do código de cada provedor. Chave no cabeçalho `x-goog-api-key`, JSON Schema em `generationConfig.responseFormat`.
 7. **Correção lenta** (eu notei testando). Causa: os Flash atuais raciocinam por padrão. Solução: `thinkingLevel: "low"`, Flash-Lite como modelo padrão e tela de espera com tempo e botão de cancelar.
 8. **Resposta longa demais** (eu notei testando). Prompt e schema agora limitam a 1 frase de resumo, até 3 acertos, até 3 ajustes e até 2 perguntas.
+9. **Mapa do conceito** (ideia minha, implementação da IA). Depois da correção, a IA devolve de 3 a 5 passos curtos de como o conceito funciona, montados a partir da explicação ajustada, e a tela desenha como um fluxo.
 
 ## O que eu peguei testando
 

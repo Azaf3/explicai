@@ -41,6 +41,12 @@ export const demoExamples: DemoExample[] = [
         'Que tipo de dado, quando muda, faz um componente renderizar de novo? Existe mais de um?',
         'Se uma peça de Lego (componente filho) precisa de uma informação que está na peça de cima (pai), como ela recebe isso?',
       ],
+      map: [
+        'Monto a tela com peças (componentes)',
+        'Um dado muda',
+        'O componente renderiza de novo',
+        'React atualiza só o que mudou',
+      ],
       revised:
         'React é uma biblioteca para montar a interface que atualiza só a parte da tela que mudou, sem recarregar a página. Eu vejo como peças de Lego: cada componente é uma peça e eu monto a tela juntando elas. Quando muda um dado, ele atualiza a tela sozinho.',
     },
@@ -69,6 +75,12 @@ export const demoExamples: DemoExample[] = [
         'Quando o garçom volta sem o prato, como você sabe se foi porque o pedido estava errado ou porque a cozinha deu problema?',
         'Se o garçom não lembra de você entre um pedido e outro, como ele sabe que você já está logado?',
       ],
+      map: [
+        'Front faz o pedido (GET ou POST)',
+        'API leva até o back-end',
+        'Back-end busca ou salva no banco',
+        'API volta com a resposta',
+      ],
       revised:
         'API é o jeito combinado de o front pedir e receber dados do back-end. O front manda um GET pra pegar as coisas e um POST pra salvar. É tipo um garçom: eu faço o pedido, ele leva pra cozinha e volta com o prato.',
     },
@@ -89,6 +101,12 @@ export const demoExamples: DemoExample[] = [
       questions: [
         'O que acontece se você usa uma variável dentro do efeito e não coloca ela no array?',
         'Você usaria useEffect para calcular o total de um carrinho a partir de uma lista que já está no estado? Por quê?',
+      ],
+      map: [
+        'A tela aparece',
+        'O efeito roda (API, timer)',
+        'Dependência muda, roda de novo',
+        'Componente sai, a limpeza roda',
       ],
       revised:
         'O useEffect serve pra rodar coisas que são de fora do React, tipo buscar dados de uma API ou ligar um timer. Ele roda depois que a tela aparece. O array no final diz quando ele roda de novo: vazio é só quando o componente aparece. Se eu ligo um timer, retorno uma função que desliga ele quando o componente sai da tela.',

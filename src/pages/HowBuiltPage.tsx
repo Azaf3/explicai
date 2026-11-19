@@ -42,6 +42,11 @@ const decisions: (Item & { who: string })[] = [
     body: 'A primeira versão só tinha o Claude, que é pago. Eu quis que qualquer pessoa conseguisse testar de graça, então o padrão virou o Gemini, que tem nível gratuito. O prompt, o formato da correção e a leitura do JSON são compartilhados; cada provedor só tem o próprio jeito de montar a requisição e ler a resposta.',
   },
   {
+    who: 'Minha ideia',
+    title: 'Mapa do conceito depois da correção',
+    body: 'Texto corrigido ajuda, mas ver o caminho ajuda mais. Depois de cada correção, a IA monta de 3 a 5 passos de como o conceito funciona, usando as palavras da própria explicação ajustada, e a tela desenha isso como um fluxo.',
+  },
+  {
     who: 'Proposta da IA, aprovada por mim',
     title: 'Resposta com formato garantido',
     body: 'A correção precisa voltar sempre com os mesmos campos pra tela conseguir montar. Os dois provedores recebem um JSON Schema e são obrigados a seguir. Mesmo assim, o código trata os casos em que pode falhar: recusa, resposta cortada e JSON inválido.',

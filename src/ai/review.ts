@@ -18,6 +18,8 @@ export interface Review {
   adjustments: Adjustment[]
   questions: string[]
   revised: string
+  /** Passos curtos de como o conceito funciona, na ordem, com as palavras do dev. Vazio em tentativas antigas. */
+  map: string[]
 }
 
 export type ProviderId = 'gemini' | 'anthropic'
@@ -102,7 +104,7 @@ export function getModelLabel(provider: ProviderId, model: string): string {
 export const reviewSchema = {
   type: 'object',
   additionalProperties: false,
-  required: ['veredito', 'resumo', 'acertos', 'ajustes', 'perguntas', 'versao_ajustada'],
+  required: ['veredito', 'resumo', 'acertos', 'ajustes', 'perguntas', 'versao_ajustada', 'mapa'],
   properties: {
     veredito: {
       type: 'string',
@@ -140,6 +142,12 @@ export const reviewSchema = {
       description:
         'O texto do dev com o mínimo de mudanças para ficar correto, mantendo palavras e analogias dele.',
     },
+    mapa: {
+      type: 'array',
+      items: { type: 'string' },
+      description:
+        'De 3 a 5 passos, na ordem, de como o conceito funciona segundo a versão ajustada. Cada passo com até 6 palavras.',
+    },
   },
 } as const
 
@@ -164,6 +172,7 @@ export function buildSystemPrompt(concept: Concept): string {
     '- "ajustes": no máximo 3, só o que realmente está errado ou impreciso, com uma frase em "problema".',
     '- "perguntas": no máximo 2.',
     '- Nada de introdução, elogio genérico ou repetição do que já foi dito.',
+    '- "mapa": de 3 a 5 passos em sequência mostrando como o conceito funciona, montados a partir da versão ajustada e com as palavras do dev. Cada passo com até 6 palavras, sem numeração.',
     '',
     `Conceito: ${concept.title}`,
     `Pergunta feita ao dev: ${concept.prompt}`,
@@ -198,6 +207,7 @@ interface RawReview {
   ajustes: { trecho: string; problema: string; sugestao: string }[]
   perguntas: string[]
   versao_ajustada: string
+  mapa?: string[]
 }
 
 const VERDICTS: Verdict[] = ['firme', 'quase', 'revisar']
@@ -228,6 +238,7 @@ export function parseReviewJson(text: string | undefined): Review {
     })),
     questions: raw.perguntas ?? [],
     revised: raw.versao_ajustada ?? '',
+    map: (raw.mapa ?? []).filter((step) => typeof step === 'string' && step.trim()).slice(0, 6),
   }
 }
 

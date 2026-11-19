@@ -1,4 +1,5 @@
 import type { Review, Verdict } from '../ai/review'
+import ConceptMap from './ConceptMap'
 
 const VERDICT_LABEL: Record<Verdict, string> = {
   firme: 'Entendeu bem',
@@ -68,6 +69,13 @@ export default function ReviewView({ review, isDemo }: Props) {
         <h3>Seu texto, ajustado</h3>
         <blockquote>{review.revised}</blockquote>
       </div>
+
+      {review.map?.length > 0 && (
+        <div className="review-block block-map">
+          <h3>Seu texto, em mapa</h3>
+          <ConceptMap steps={review.map} />
+        </div>
+      )}
     </section>
   )
 }

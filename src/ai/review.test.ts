@@ -29,7 +29,13 @@ describe('parseReviewJson', () => {
       adjustments: [{ excerpt: 'framework', issue: 'É biblioteca.', suggestion: 'biblioteca' }],
       questions: ['O que faz renderizar de novo?'],
       revised: 'React é uma biblioteca...',
+      map: ['Estado muda', 'Componente renderiza', 'Atualiza só o que mudou'],
     })
+  })
+
+  it('aceita resposta sem mapa (tentativas salvas antes do mapa existir)', () => {
+    const { mapa: _mapa, ...semMapa } = rawReview
+    expect(parseReviewJson(JSON.stringify(semMapa)).map).toEqual([])
   })
 
   it('aceita o veredito com maiúscula diferente', () => {

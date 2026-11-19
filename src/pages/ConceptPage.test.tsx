@@ -44,6 +44,9 @@ describe('ConceptPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Ver um exemplo pronto' }))
 
     expect(screen.getByText('Exemplo pronto')).toBeInTheDocument()
+    expect(screen.getByRole('list', { name: 'Mapa do conceito' })).toHaveTextContent(
+      'React atualiza só o que mudou',
+    )
     expect(screen.getByLabelText(/Explica aí/)).toHaveValue(demoExamples[0].explanation)
     expect(spy).not.toHaveBeenCalled()
     expect(attempts.all()).toHaveLength(0)

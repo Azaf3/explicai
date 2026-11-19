@@ -640,6 +640,73 @@ blockquote {
   white-space: pre-wrap;
 }
 
+/* Mapa do conceito */
+.block-map h3::before {
+  content: '→';
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.flow {
+  list-style: none;
+  padding: 0 !important;
+  margin: 0.25rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 440px;
+}
+
+.review .flow li {
+  margin: 0;
+}
+
+.flow li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.85rem;
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.flow li + li::before {
+  content: '';
+  position: absolute;
+  left: 1.55rem;
+  top: calc(-1.5rem - 1.5px);
+  width: 1.5px;
+  height: 1.5rem;
+  background: var(--ink);
+}
+
+.flow li + li::after {
+  content: '';
+  position: absolute;
+  left: calc(1.55rem - 4px);
+  top: -7px;
+  border: 5px solid transparent;
+  border-top: 6px solid var(--ink);
+  border-bottom: 0;
+}
+
+.flow-number {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--marker);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+}
+
 .reference {
   margin-top: 2.5rem;
   border: 1.5px dashed var(--line);

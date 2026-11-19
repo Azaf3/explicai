@@ -24,7 +24,8 @@ A página [Como foi feito com IA](https://azaf3.github.io/explicai/como-foi-feit
 1. Escolha um conceito (JavaScript, TypeScript, async/await, React, useState, useEffect, Vite, Node.js, API REST, JWT, CORS, Git).
 2. Escreva como você entende.
 3. O app manda seu texto e a referência do conceito para a IA escolhida (Gemini, grátis, ou Claude, pago) e recebe uma correção estruturada.
-4. Cada tentativa fica salva no navegador, pra você ver a evolução.
+4. A correção vem com um **mapa do conceito**: de 3 a 5 passos de como ele funciona, montados a partir da sua explicação ajustada.
+5. Cada tentativa fica salva no navegador, pra você ver a evolução.
 
 ![Correção de uma explicação sobre React](docs/correcao.jpg)
 
@@ -43,7 +44,7 @@ A página [Como foi feito com IA](https://azaf3.github.io/explicai/como-foi-feit
 
 - React 19 + TypeScript + Vite
 - React Router (busca e filtro na URL)
-- Vitest + Testing Library (44 testes: os dois provedores, armazenamento e fluxo da tela)
+- Vitest + Testing Library (45 testes: os dois provedores, armazenamento e fluxo da tela)
 - oxlint + Prettier
 - Deploy estático no GitHub Pages
 
