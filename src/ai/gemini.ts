@@ -101,7 +101,7 @@ function errorFromResponse(status: number, data: GeminiResponse): ReviewError {
   if (status === 429) {
     return new ReviewError(
       'rate_limit',
-      'Limite do nível gratuito do Gemini atingido. Espere um minuto ou troque para o Flash-Lite em Configurações.',
+      'Limite do nível gratuito do Gemini atingido. Espere um minuto e tente de novo.',
     )
   }
   if (status === 503) {

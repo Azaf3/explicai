@@ -26,7 +26,7 @@ describe('settings', () => {
     expect(settings.getModel('anthropic')).toBe('claude-haiku-5-5')
     settings.setModel('anthropic', 'claude-opus-5-5')
     expect(settings.getModel('anthropic')).toBe('claude-opus-5-5')
-    expect(settings.getModel('gemini')).toBe('gemini-flash-latest')
+    expect(settings.getModel('gemini')).toBe('gemini-flash-lite-latest')
   })
 })
 

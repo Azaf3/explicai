@@ -56,8 +56,12 @@ export const PROVIDERS: ProviderInfo[] = [
       'No nível gratuito, o Google pode usar o que você envia para melhorar os produtos dele.',
     ],
     models: [
-      { id: 'gemini-flash-latest', label: 'Gemini Flash', note: 'O Flash mais recente. Boa qualidade.' },
-      { id: 'gemini-flash-lite-latest', label: 'Gemini Flash-Lite', note: 'Mais rápido, limite maior.' },
+      {
+        id: 'gemini-flash-lite-latest',
+        label: 'Gemini Flash-Lite',
+        note: 'O mais rápido. Bom para correções curtas.',
+      },
+      { id: 'gemini-flash-latest', label: 'Gemini Flash', note: 'Mais detalhado, porém mais lento.' },
     ],
   },
   {
